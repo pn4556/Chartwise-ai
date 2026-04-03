@@ -18,30 +18,25 @@ from app.routers import enhanced_predictions
 from app.routers import auth
 from app.services.data_service import DataService
 from app.services.prediction_service import PredictionService
-from app.scheduler import scheduler
-from app.websocket import manager, handle_websocket
 
-# Create database tables
-Base.metadata.create_all(bind=engine)
-
+# Create FastAPI app
 app = FastAPI(
     title="Chartwise AI API",
     description="AI-powered trading analysis and predictions",
     version="1.0.0"
 )
 
-# CORS configuration - use FRONTEND_URL env var for production
-# Allow multiple origins for local development and production
+# CORS configuration
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
 ALLOWED_ORIGINS = [
     FRONTEND_URL,
     "http://localhost:3000",
-    "http://localhost:5173",  # Vite default
+    "http://localhost:5173",
     "http://127.0.0.1:3000",
     "http://127.0.0.1:5173",
+    "https://chartwise-ai-dal6.vercel.app",
 ]
 
-# CORS middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
@@ -59,17 +54,40 @@ app.include_router(paper_trading.router, prefix="/api/paper-trading", tags=["pap
 app.include_router(watchlist.router, prefix="/api/watchlist", tags=["watchlist"])
 app.include_router(enhanced_predictions.router)
 
+# Global scheduler reference
+scheduler = None
+
 @app.on_event("startup")
 async def startup_event():
     """Initialize services on startup"""
     print("🚀 Chartwise AI API starting up...")
-    # Initialize data service
-    DataService.initialize()
-    print("✅ Data service initialized")
     
-    # Start scheduler for automatic updates
-    scheduler.start()
-    print("✅ Scheduler started")
+    # Create database tables
+    try:
+        Base.metadata.create_all(bind=engine)
+        print("✅ Database tables created")
+    except Exception as e:
+        print(f"⚠️ Database initialization error: {e}")
+    
+    # Initialize data service
+    try:
+        DataService.initialize()
+        print("✅ Data service initialized")
+    except Exception as e:
+        print(f"⚠️ Data service init error: {e}")
+    
+    # Start scheduler only if enabled
+    if os.getenv("ENABLE_SCHEDULER", "false").lower() == "true":
+        try:
+            from app.scheduler import scheduler as sched
+            global scheduler
+            scheduler = sched
+            scheduler.start()
+            print("✅ Scheduler started")
+        except Exception as e:
+            print(f"⚠️ Scheduler start error: {e}")
+    else:
+        print("ℹ️ Scheduler disabled (set ENABLE_SCHEDULER=true to enable)")
 
 @app.get("/")
 async def root():
@@ -81,17 +99,25 @@ async def root():
 
 @app.get("/health")
 async def health_check():
+    """Health check endpoint for Render"""
     return {
         "status": "healthy",
         "timestamp": datetime.now().isoformat(),
-        "scheduler": scheduler.get_status(),
-        "websocket_connections": len(manager.active_connections)
+        "scheduler": "running" if scheduler and scheduler.running else "disabled"
     }
 
-# WebSocket endpoint for real-time updates
+# WebSocket placeholder (simplified for deployment)
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
-    await handle_websocket(websocket)
+    await websocket.accept()
+    await websocket.send_json({"type": "connected", "message": "WebSocket connected"})
+    # Keep connection alive
+    try:
+        while True:
+            data = await websocket.receive_text()
+            await websocket.send_json({"type": "echo", "data": data})
+    except:
+        await websocket.close()
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

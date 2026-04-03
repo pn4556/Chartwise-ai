@@ -1,15 +1,11 @@
-# Render.com deployment configuration for Chartwise AI Backend
-# Place this file in the ROOT of your repository (not in backend/)
-
 services:
-  # Web Service - FastAPI Backend
   - type: web
     name: chartwise-api
     runtime: python
     plan: free
     rootDir: backend
     buildCommand: pip install -r requirements.txt
-    startCommand: uvicorn main:app --host 0.0.0.0 --port 8000 --workers 1
+    startCommand: uvicorn main:app --host 0.0.0.0 --port 8000
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
@@ -21,13 +17,8 @@ services:
         generateValue: true
       - key: FRONTEND_URL
         value: https://chartwise-ai-dal6.vercel.app
-      - key: ENABLE_SCHEDULER
-        value: true
     healthCheckPath: /health
-    autoDeploy: true
 
 databases:
   - name: chartwise-db
     plan: free
-    databaseName: chartwise
-    user: chartwise
