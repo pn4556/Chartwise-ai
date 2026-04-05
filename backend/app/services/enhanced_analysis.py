@@ -35,9 +35,31 @@ class TechnicalIndicators:
     bb_upper: float
     bb_middle: float
     bb_lower: float
+    bb_width: float  # Bollinger Band width for squeeze detection
     volume: float
     avg_volume: float
     atr: float
+    # New advanced indicators
+    vwap: float  # Volume Weighted Average Price
+    williams_r: float  # Williams %R
+    roc: float  # Rate of Change
+    ichimoku_tenkan: float  # Ichimoku Tenkan-sen
+    ichimoku_kijun: float  # Ichimoku Kijun-sen
+    ichimoku_cloud_top: float  # Ichimoku Senkou Span A
+    ichimoku_cloud_bottom: float  # Ichimoku Senkou Span B
+    psar: float  # Parabolic SAR
+    fib_38_2: float  # Fibonacci 38.2% level
+    fib_50: float  # Fibonacci 50% level
+    fib_61_8: float  # Fibonacci 61.8% level
+    support_level: float  # Key support
+    resistance_level: float  # Key resistance
+    # Candlestick patterns
+    candlestick_pattern: str  # Pattern name or 'none'
+    pattern_strength: float  # 0-1 strength score
+    # Additional signals
+    volume_trend: str  # 'increasing', 'decreasing', 'neutral'
+    price_vs_vwap: str  # 'above', 'below', 'at'
+    trend_strength_score: float  # 0-100 composite trend score
 
 @dataclass
 class TimeframeAnalysis:
@@ -71,7 +93,7 @@ class PredictionResult:
     reasoning: str
     key_levels: Dict[str, float]
     calculated_at: str
-    algorithm_version: str = "2.0-enhanced"
+    algorithm_version: str = "3.0-ai-enhanced"
 
 
 class EnhancedTechnicalAnalysis:
@@ -88,10 +110,20 @@ class EnhancedTechnicalAnalysis:
     
     # Momentum indicator weights within category
     MOMENTUM_WEIGHTS = {
-        'rsi': 0.30,
-        'stoch_rsi': 0.25,
-        'macd': 0.30,
-        'cci': 0.15
+        'rsi': 0.25,
+        'stoch_rsi': 0.20,
+        'macd': 0.25,
+        'cci': 0.10,
+        'williams_r': 0.12,
+        'roc': 0.08
+    }
+    
+    # Trend indicator weights
+    TREND_WEIGHTS = {
+        'ma_alignment': 0.35,
+        'adx_strength': 0.25,
+        'ichimoku': 0.25,
+        'psar': 0.15
     }
     
     @staticmethod
@@ -335,6 +367,182 @@ class EnhancedTechnicalAnalysis:
         
         return sum(tr_list[-period:]) / period
     
+    @staticmethod
+    def calculate_vwap(highs: List[float], lows: List[float], closes: List[float], volumes: List[float]) -> float:
+        """Calculate Volume Weighted Average Price"""
+        typical_prices = [(h + l + c) / 3 for h, l, c in zip(highs, lows, closes)]
+        total_vol = sum(volumes)
+        if total_vol == 0:
+            return closes[-1]
+        vwap = sum(tp * vol for tp, vol in zip(typical_prices, volumes)) / total_vol
+        return vwap
+    
+    @staticmethod
+    def calculate_williams_r(highs: List[float], lows: List[float], closes: List[float], period: int = 14) -> float:
+        """Calculate Williams %R"""
+        if len(closes) < period:
+            return -50
+        highest_high = max(highs[-period:])
+        lowest_low = min(lows[-period:])
+        if highest_high == lowest_low:
+            return -50
+        williams_r = -100 * (highest_high - closes[-1]) / (highest_high - lowest_low)
+        return williams_r
+    
+    @staticmethod
+    def calculate_roc(prices: List[float], period: int = 12) -> float:
+        """Calculate Rate of Change"""
+        if len(prices) < period + 1:
+            return 0
+        roc = ((prices[-1] - prices[-period - 1]) / prices[-period - 1]) * 100
+        return roc
+    
+    @staticmethod
+    def calculate_ichimoku(highs: List[float], lows: List[float], closes: List[float]) -> Dict:
+        """Calculate Ichimoku Cloud components"""
+        # Tenkan-sen (Conversion Line): (9-period high + 9-period low) / 2
+        tenkan_high = max(highs[-9:]) if len(highs) >= 9 else max(highs)
+        tenkan_low = min(lows[-9:]) if len(lows) >= 9 else min(lows)
+        tenkan = (tenkan_high + tenkan_low) / 2
+        
+        # Kijun-sen (Base Line): (26-period high + 26-period low) / 2
+        kijun_high = max(highs[-26:]) if len(highs) >= 26 else max(highs)
+        kijun_low = min(lows[-26:]) if len(lows) >= 26 else min(lows)
+        kijun = (kijun_high + kijun_low) / 2
+        
+        # Senkou Span A (Leading Span A): (Tenkan + Kijun) / 2
+        senkou_a = (tenkan + kijun) / 2
+        
+        # Senkou Span B (Leading Span B): (52-period high + 52-period low) / 2
+        senkou_b_high = max(highs[-52:]) if len(highs) >= 52 else max(highs)
+        senkou_b_low = min(lows[-52:]) if len(lows) >= 52 else min(lows)
+        senkou_b = (senkou_b_high + senkou_b_low) / 2
+        
+        return {
+            'tenkan': tenkan,
+            'kijun': kijun,
+            'senkou_a': senkou_a,
+            'senkou_b': senkou_b
+        }
+    
+    @staticmethod
+    def calculate_parabolic_sar(highs: List[float], lows: List[float], closes: List[float], 
+                                af: float = 0.02, max_af: float = 0.2) -> float:
+        """Calculate Parabolic SAR"""
+        if len(closes) < 2:
+            return closes[-1] if closes else 0
+        
+        # Simplified PSAR calculation
+        length = len(closes)
+        sar = lows[0]
+        ep = highs[0]
+        trend = 1  # 1 for uptrend, -1 for downtrend
+        
+        for i in range(1, min(length, 10)):
+            if trend == 1:
+                sar = sar + af * (ep - sar)
+                if lows[i] < sar:
+                    trend = -1
+                    sar = ep
+                    ep = lows[i]
+                    af = 0.02
+                elif highs[i] > ep:
+                    ep = highs[i]
+                    af = min(af + 0.02, max_af)
+            else:
+                sar = sar + af * (ep - sar)
+                if highs[i] > sar:
+                    trend = 1
+                    sar = ep
+                    ep = highs[i]
+                    af = 0.02
+                elif lows[i] < ep:
+                    ep = lows[i]
+                    af = min(af + 0.02, max_af)
+        
+        return sar
+    
+    @staticmethod
+    def calculate_fibonacci_levels(high: float, low: float) -> Dict[str, float]:
+        """Calculate Fibonacci retracement levels"""
+        diff = high - low
+        return {
+            '38_2': high - 0.382 * diff,
+            '50': high - 0.5 * diff,
+            '61_8': high - 0.618 * diff
+        }
+    
+    @staticmethod
+    def detect_support_resistance(closes: List[float], highs: List[float], 
+                                   lows: List[float], window: int = 10) -> Dict[str, float]:
+        """Detect key support and resistance levels using local minima/maxima"""
+        if len(closes) < window * 2:
+            return {'support': min(closes), 'resistance': max(closes)}
+        
+        # Find local minima (support)
+        supports = []
+        for i in range(window, len(lows) - window):
+            if all(lows[i] <= lows[i-j] for j in range(1, window+1)) and \
+               all(lows[i] <= lows[i+j] for j in range(1, window+1)):
+                supports.append(lows[i])
+        
+        # Find local maxima (resistance)
+        resistances = []
+        for i in range(window, len(highs) - window):
+            if all(highs[i] >= highs[i-j] for j in range(1, window+1)) and \
+               all(highs[i] >= highs[i+j] for j in range(1, window+1)):
+                resistances.append(highs[i])
+        
+        support = max(supports[-3:]) if supports else min(closes)
+        resistance = min(resistances[-3:]) if resistances else max(closes)
+        
+        return {'support': support, 'resistance': resistance}
+    
+    @staticmethod
+    def detect_candlestick_patterns(opens: List[float], highs: List[float], 
+                                     lows: List[float], closes: List[float]) -> Dict:
+        """Detect common candlestick patterns"""
+        if len(closes) < 3:
+            return {'pattern': 'none', 'strength': 0}
+        
+        o, h, l, c = opens[-1], highs[-1], lows[-1], closes[-1]
+        prev_o, prev_h, prev_l, prev_c = opens[-2], highs[-2], lows[-2], closes[-2]
+        
+        body = abs(c - o)
+        upper_shadow = h - max(o, c)
+        lower_shadow = min(o, c) - l
+        total_range = h - l
+        
+        # Bullish patterns
+        # Hammer
+        if lower_shadow > 2 * body and upper_shadow < body and c > o:
+            return {'pattern': 'hammer_bullish', 'strength': 0.7}
+        
+        # Bullish Engulfing
+        if prev_c < prev_o and c > o and o < prev_c and c > prev_o:
+            return {'pattern': 'engulfing_bullish', 'strength': 0.8}
+        
+        # Morning Star (simplified)
+        if len(closes) >= 3:
+            prev2_c = closes[-3]
+            if prev2_c > opens[-3] and abs(prev_c - prev_o) < 0.3 * abs(prev2_c - opens[-3]) and c > o:
+                return {'pattern': 'morning_star', 'strength': 0.85}
+        
+        # Bearish patterns
+        # Shooting Star
+        if upper_shadow > 2 * body and lower_shadow < body and c < o:
+            return {'pattern': 'shooting_star_bearish', 'strength': 0.7}
+        
+        # Bearish Engulfing
+        if prev_c > prev_o and c < o and o > prev_c and c < prev_o:
+            return {'pattern': 'engulfing_bearish', 'strength': 0.8}
+        
+        # Doji
+        if body < 0.1 * total_range:
+            return {'pattern': 'doji', 'strength': 0.5}
+        
+        return {'pattern': 'none', 'strength': 0}
+    
     @classmethod
     def calculate_indicators(cls, data: List[Dict]) -> Optional[TechnicalIndicators]:
         """Calculate all technical indicators"""
@@ -368,9 +576,14 @@ class EnhancedTechnicalAnalysis:
         bb_std = np.std(closes[-20:])
         bb_upper = bb_middle + 2 * bb_std
         bb_lower = bb_middle - 2 * bb_std
+        bb_width = (bb_upper - bb_lower) / bb_middle if bb_middle > 0 else 0
         
         current_volume = volumes[-1]
         avg_volume = sum(volumes[-20:]) / 20
+        
+        # Volume trend
+        recent_vol = sum(volumes[-5:]) / 5
+        volume_trend = 'increasing' if recent_vol > avg_volume * 1.1 else 'decreasing' if recent_vol < avg_volume * 0.9 else 'neutral'
         
         # OBV calculation
         obv = 0
@@ -383,6 +596,41 @@ class EnhancedTechnicalAnalysis:
         # Normalize OBV
         avg_vol = sum(volumes) / len(volumes)
         obv_normalized = np.clip(obv / (avg_vol * len(volumes)), -1, 1)
+        
+        # New advanced indicators
+        opens = [d['open'] for d in data]
+        
+        # VWAP
+        vwap = cls.calculate_vwap(highs, lows, closes, volumes)
+        price_vs_vwap = 'above' if current_price > vwap else 'below' if current_price < vwap else 'at'
+        
+        # Williams %R
+        williams_r = cls.calculate_williams_r(highs, lows, closes)
+        
+        # Rate of Change
+        roc = cls.calculate_roc(closes)
+        
+        # Ichimoku Cloud
+        ichimoku = cls.calculate_ichimoku(highs, lows, closes)
+        
+        # Parabolic SAR
+        psar = cls.calculate_parabolic_sar(highs, lows, closes)
+        
+        # Fibonacci levels
+        recent_high = max(highs[-20:])
+        recent_low = min(lows[-20:])
+        fib_levels = cls.calculate_fibonacci_levels(recent_high, recent_low)
+        
+        # Support/Resistance
+        sr_levels = cls.detect_support_resistance(closes, highs, lows)
+        
+        # Candlestick patterns
+        patterns = cls.detect_candlestick_patterns(opens, highs, lows, closes)
+        
+        # Trend strength composite
+        trend_strength_score = (adx_data['adx'] + 
+                               (100 if current_price > ma50 else 0) + 
+                               (50 if ichimoku['tenkan'] > ichimoku['kijun'] else 0)) / 3
         
         return TechnicalIndicators(
             symbol=data[0].get('symbol', 'UNKNOWN'),
@@ -407,9 +655,28 @@ class EnhancedTechnicalAnalysis:
             bb_upper=bb_upper,
             bb_middle=bb_middle,
             bb_lower=bb_lower,
+            bb_width=bb_width,
             volume=current_volume,
             avg_volume=avg_volume,
-            atr=atr
+            atr=atr,
+            vwap=vwap,
+            williams_r=williams_r,
+            roc=roc,
+            ichimoku_tenkan=ichimoku['tenkan'],
+            ichimoku_kijun=ichimoku['kijun'],
+            ichimoku_cloud_top=ichimoku['senkou_a'],
+            ichimoku_cloud_bottom=ichimoku['senkou_b'],
+            psar=psar,
+            fib_38_2=fib_levels['38_2'],
+            fib_50=fib_levels['50'],
+            fib_61_8=fib_levels['61_8'],
+            support_level=sr_levels['support'],
+            resistance_level=sr_levels['resistance'],
+            candlestick_pattern=patterns['pattern'],
+            pattern_strength=patterns['strength'],
+            volume_trend=volume_trend,
+            price_vs_vwap=price_vs_vwap,
+            trend_strength_score=trend_strength_score
         )
     
     @staticmethod
@@ -482,12 +749,38 @@ class EnhancedTechnicalAnalysis:
         else:
             signals['cci'] = 'neutral'
         
-        # Weighted average
+        # Williams %R score (range -100 to 0)
+        williams_normalized = (ind.williams_r + 50) / 50  # Normalize to -1 to 1
+        if ind.williams_r < -80:
+            signals['williams_r'] = 'oversold_bullish'
+        elif ind.williams_r > -20:
+            signals['williams_r'] = 'overbought_bearish'
+        elif ind.williams_r > -50:
+            signals['williams_r'] = 'neutral_bearish'
+        else:
+            signals['williams_r'] = 'neutral_bullish'
+        
+        # Rate of Change score
+        roc_normalized = np.clip(ind.roc / 20, -1, 1)  # Normalize ±20% to ±1
+        if ind.roc > 10:
+            signals['roc'] = 'strong_momentum_bullish'
+        elif ind.roc > 5:
+            signals['roc'] = 'moderate_momentum_bullish'
+        elif ind.roc < -10:
+            signals['roc'] = 'strong_momentum_bearish'
+        elif ind.roc < -5:
+            signals['roc'] = 'moderate_momentum_bearish'
+        else:
+            signals['roc'] = 'low_momentum'
+        
+        # Weighted average with new indicators
         momentum_score = (
             rsi_normalized * cls.MOMENTUM_WEIGHTS['rsi'] +
             stoch_rsi_normalized * cls.MOMENTUM_WEIGHTS['stoch_rsi'] +
             macd_signal * cls.MOMENTUM_WEIGHTS['macd'] +
-            cci_normalized * cls.MOMENTUM_WEIGHTS['cci']
+            cci_normalized * cls.MOMENTUM_WEIGHTS['cci'] +
+            williams_normalized * cls.MOMENTUM_WEIGHTS['williams_r'] +
+            roc_normalized * cls.MOMENTUM_WEIGHTS['roc']
         )
         
         return momentum_score, signals
@@ -543,8 +836,39 @@ class EnhancedTechnicalAnalysis:
         else:
             signals['ma'] = 'bearish'
         
-        # Combine: direction * strength
-        trend_score = trend_direction * trend_strength * 0.6 + ma_score * 0.4
+        # Ichimoku Cloud analysis
+        ichimoku_bullish = 0
+        if ind.current_price > ind.ichimoku_cloud_top:
+            ichimoku_bullish += 1
+            signals['ichimoku'] = 'above_cloud_bullish'
+        elif ind.current_price < ind.ichimoku_cloud_bottom:
+            ichimoku_bullish -= 1
+            signals['ichimoku'] = 'below_cloud_bearish'
+        else:
+            signals['ichimoku'] = 'in_cloud_neutral'
+        
+        if ind.ichimoku_tenkan > ind.ichimoku_kijun:
+            ichimoku_bullish += 1
+        else:
+            ichimoku_bullish -= 1
+        
+        ichimoku_score = ichimoku_bullish / 2  # -1 to 1
+        
+        # Parabolic SAR
+        if ind.psar < ind.current_price:
+            psar_bullish = 1
+            signals['psar'] = 'below_price_bullish'
+        else:
+            psar_bullish = -1
+            signals['psar'] = 'above_price_bearish'
+        
+        # Combine: direction * strength with new indicators
+        trend_score = (
+            trend_direction * trend_strength * cls.TREND_WEIGHTS['adx_strength'] +
+            ma_score * cls.TREND_WEIGHTS['ma_alignment'] +
+            ichimoku_score * cls.TREND_WEIGHTS['ichimoku'] +
+            psar_bullish * cls.TREND_WEIGHTS['psar']
+        )
         
         return trend_score, signals
     
@@ -662,6 +986,8 @@ class EnhancedTechnicalAnalysis:
     def calculate_confidence(cls, signals: Dict[str, str], indicators: TechnicalIndicators) -> Tuple[float, str]:
         """
         Calculate confidence level based on signal agreement and data quality
+        Enhanced with multi-factor validation including trend alignment, volume confirmation,
+        pattern recognition, and indicator convergence
         """
         # Count signal types
         bullish_signals = sum(1 for s in signals.values() if 'bullish' in s)
@@ -672,36 +998,116 @@ class EnhancedTechnicalAnalysis:
         # Agreement score (highest when most signals align)
         max_agreement = max(bullish_signals, bearish_signals)
         agreement_ratio = max_agreement / total_signals if total_signals > 0 else 0
-        
-        # ADX-based confidence modifier (stronger trend = higher confidence)
-        if indicators.adx > 40:
-            adx_modifier = 1.15
-        elif indicators.adx > 25:
-            adx_modifier = 1.0
-        elif indicators.adx > 15:
-            adx_modifier = 0.85
-        else:
-            adx_modifier = 0.7
-        
-        # Volume-based confidence (higher volume = more reliable)
-        if indicators.volume > indicators.avg_volume * 1.5:
-            volume_modifier = 1.1
-        elif indicators.volume > indicators.avg_volume:
-            volume_modifier = 1.0
-        else:
-            volume_modifier = 0.9
-        
-        # Calculate final confidence
         base_confidence = agreement_ratio * 100
-        confidence = min(100, base_confidence * adx_modifier * volume_modifier)
+        
+        # Multi-factor confidence modifiers
+        modifiers = []
+        
+        # 1. Trend strength modifier (ADX)
+        if indicators.adx > 40:
+            modifiers.append(1.15)
+        elif indicators.adx > 25:
+            modifiers.append(1.08)
+        elif indicators.adx > 15:
+            modifiers.append(0.95)
+        else:
+            modifiers.append(0.8)
+        
+        # 2. Volume confirmation modifier
+        if indicators.volume > indicators.avg_volume * 1.5:
+            modifiers.append(1.12)
+        elif indicators.volume > indicators.avg_volume * 1.2:
+            modifiers.append(1.05)
+        elif indicators.volume > indicators.avg_volume:
+            modifiers.append(1.0)
+        else:
+            modifiers.append(0.92)
+        
+        # 3. VWAP confirmation modifier
+        price_above_vwap = indicators.current_price > indicators.vwap
+        trend_bullish = indicators.trend_strength_score > 50
+        if price_above_vwap == trend_bullish:
+            modifiers.append(1.08)  # Price aligned with trend vs VWAP
+        else:
+            modifiers.append(0.95)
+        
+        # 4. Ichimoku Cloud modifier
+        above_cloud = indicators.current_price > indicators.ichimoku_cloud_top
+        below_cloud = indicators.current_price < indicators.ichimoku_cloud_bottom
+        tenkan_above_kijun = indicators.ichimoku_tenkan > indicators.ichimoku_kijun
+        
+        if (above_cloud and tenkan_above_kijun) or (below_cloud and not tenkan_above_kijun):
+            modifiers.append(1.1)  # Strong cloud signal
+        elif above_cloud or below_cloud:
+            modifiers.append(1.02)
+        else:
+            modifiers.append(0.95)  # Price in cloud = uncertainty
+        
+        # 5. Candlestick pattern modifier
+        if indicators.candlestick_pattern != 'none':
+            if 'bullish' in indicators.candlestick_pattern and bullish_signals > bearish_signals:
+                modifiers.append(1 + indicators.pattern_strength * 0.1)
+            elif 'bearish' in indicators.candlestick_pattern and bearish_signals > bullish_signals:
+                modifiers.append(1 + indicators.pattern_strength * 0.1)
+            else:
+                modifiers.append(0.95)  # Pattern contradicts other signals
+        
+        # 6. Bollinger Band squeeze modifier (potential breakout)
+        if indicators.bb_width < 0.05:  # Squeeze
+            modifiers.append(0.9)  # Low volatility = waiting for breakout
+        elif indicators.bb_width > 0.1:  # Expansion
+            modifiers.append(1.05)  # Volatility expansion = confirmation
+        
+        # 7. Support/Resistance proximity modifier
+        near_support = abs(indicators.current_price - indicators.support_level) / indicators.current_price < 0.02
+        near_resistance = abs(indicators.current_price - indicators.resistance_level) / indicators.current_price < 0.02
+        if near_support and bullish_signals > bearish_signals:
+            modifiers.append(1.08)  # Bounce from support
+        elif near_resistance and bearish_signals > bullish_signals:
+            modifiers.append(1.08)  # Rejection at resistance
+        
+        # 8. Williams %R confirmation
+        williams_bullish = indicators.williams_r > -20  # Overbought but strong
+        williams_bearish = indicators.williams_r < -80  # Oversold
+        if williams_bearish and bullish_signals > bearish_signals:
+            modifiers.append(1.05)  # Oversold + bullish signals
+        elif williams_bullish and bearish_signals > bullish_signals:
+            modifiers.append(1.05)  # Overbought + bearish signals
+        
+        # 9. Rate of Change momentum modifier
+        if abs(indicators.roc) > 10:  # Strong momentum
+            modifiers.append(1.05)
+        elif abs(indicators.roc) < 2:  # Weak momentum
+            modifiers.append(0.95)
+        
+        # 10. Multi-timeframe trend alignment (if available)
+        if indicators.trend_strength_score > 70:
+            modifiers.append(1.08)
+        elif indicators.trend_strength_score < 30:
+            modifiers.append(0.95)
+        
+        # Calculate composite modifier (weighted average)
+        composite_modifier = sum(modifiers) / len(modifiers) if modifiers else 1.0
+        
+        # Apply all modifiers
+        confidence = min(100, base_confidence * composite_modifier)
+        
+        # Additional signal diversity bonus (having multiple confirming indicators)
+        signal_diversity = len(set(signals.values()))
+        if signal_diversity >= 4 and max_agreement >= 3:
+            confidence = min(100, confidence * 1.05)
         
         # Classify confidence level
-        if confidence >= 75:
+        if confidence >= 80:
+            confidence_level = 'very_high'
+        elif confidence >= 65:
             confidence_level = 'high'
         elif confidence >= 50:
             confidence_level = 'medium'
-        else:
+        elif confidence >= 35:
             confidence_level = 'low'
+        else:
+            confidence_level = 'very_low'
         
         return round(confidence, 1), confidence_level
     
@@ -739,8 +1145,44 @@ class EnhancedTechnicalAnalysis:
         if signals.get('volume') == 'very_high':
             reasons.append("High volume confirms price action")
         
+        # New indicator reasoning
+        if ind.candlestick_pattern != 'none':
+            pattern_name = ind.candlestick_pattern.replace('_', ' ').title()
+            reasons.append(f"{pattern_name} pattern detected (strength: {ind.pattern_strength:.0%})")
+        
+        if ind.price_vs_vwap == 'above':
+            reasons.append("Price above VWAP - bullish institutional flow")
+        elif ind.price_vs_vwap == 'below':
+            reasons.append("Price below VWAP - bearish institutional flow")
+        
+        if ind.current_price > ind.ichimoku_cloud_top:
+            reasons.append("Price above Ichimoku Cloud - strong bullish structure")
+        elif ind.current_price < ind.ichimoku_cloud_bottom:
+            reasons.append("Price below Ichimoku Cloud - strong bearish structure")
+        
+        # Williams %R signal
+        if ind.williams_r < -80:
+            reasons.append("Williams %R shows oversold conditions")
+        elif ind.williams_r > -20:
+            reasons.append("Williams %R shows overbought conditions")
+        
+        # ROC momentum
+        if ind.roc > 10:
+            reasons.append("Strong positive momentum (ROC)")
+        elif ind.roc < -10:
+            reasons.append("Strong negative momentum (ROC)")
+        
+        # Support/Resistance proximity
+        price = ind.current_price
+        near_support = abs(price - ind.support_level) / price < 0.02
+        near_resistance = abs(price - ind.resistance_level) / price < 0.02
+        if near_support:
+            reasons.append("Price near support level")
+        if near_resistance:
+            reasons.append("Price near resistance level")
+        
         # Combine
-        reasoning = primary + ". " + " ".join(reasons[:3])  # Top 3 reasons
+        reasoning = primary + ". " + " ".join(reasons[:4])  # Top 4 reasons
         
         return reasoning
     
