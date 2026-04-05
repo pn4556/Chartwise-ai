@@ -42,12 +42,47 @@ DEFAULT_STOCKS = [
     # Materials
     'LIN', 'APD', 'SHW', 'FCX', 'NEM', 'DOW', 'DD', 'ECL', 'NUE', 'VMC',
     # Utilities
-    'NEE', 'DUK', 'SO', 'AEP', 'EXC', 'SRE', 'XEL', 'ED', 'D', 'NGG'
+    'NEE', 'DUK', 'SO', 'AEP', 'EXC', 'SRE', 'XEL', 'ED', 'D', 'NGG',
+    # AI/Machine Learning
+    'PLTR', 'AI', 'BBAI', 'SOUN', 'AMST', 'VRNS', 'PATH', 'U', 'CFLT', 'GTLB',
+    'MDB', 'ESTC', 'AYX', 'DSGX', 'TDC', 'SMAR', 'MOND', 'INFA', 'ASAN', 'BOX',
+    # Photonics/Optics
+    'COHR', 'LITE', 'IIVI', 'NPTN', 'LASR', 'AVNW', 'KOPN', 'EMKR', 'POET', 'LPTH',
+    'AOSL', 'PLAB', 'CAMT', 'MRAM', 'PXLW', 'SIGA', 'OLED', 'UEIC'
 ]
 
 DEFAULT_CRYPTOS = [
-    'BTC-USD', 'ETH-USD', 'SOL-USD', 'ADA-USD', 'DOT-USD',
-    'AVAX-USD', 'LINK-USD', 'LTC-USD', 'AAVE-USD', 'ATOM-USD'
+    # Layer 1s
+    'BTC-USD', 'ETH-USD', 'SOL-USD', 'ADA-USD', 'DOT-USD', 'AVAX-USD', 'ATOM-USD',
+    'NEAR-USD', 'ALGO-USD', 'FTM-USD', 'VET-USD', 'TRX-USD', 'EOS-USD', 'XTZ-USD',
+    'EGLD-USD', 'HBAR-USD', 'ICP-USD', 'FIL-USD', 'APT-USD', 'SUI-USD', 'SEI-USD',
+    'INJ-USD', 'TIA-USD', 'MANTA-USD', 'STRK-USD', 'OP-USD', 'ARB-USD', 'METIS-USD',
+    # DeFi Blue Chips
+    'UNI-USD', 'AAVE-USD', 'MKR-USD', 'SNX-USD', 'COMP-USD', 'CRV-USD', 'LDO-USD',
+    'CVX-USD', 'YFI-USD', 'SUSHI-USD', '1INCH-USD', 'BAL-USD', 'LRC-USD', 'ZRX-USD',
+    'KNC-USD', 'DYDX-USD', 'GMX-USD', 'GNS-USD', 'PERP-USD', 'APEX-USD', 'MUX-USD',
+    # Layer 2 / Scaling
+    'MATIC-USD', 'IMX-USD', 'SKL-USD', 'OMG-USD', 'BOBA-USD', 'ZKS-USD', 'LOOP-USD',
+    # Infrastructure / Oracle
+    'LINK-USD', 'GRT-USD', 'BAND-USD', 'API3-USD', 'UMB-USD', 'DIA-USD', 'TRB-USD',
+    'LPT-USD', 'RNDR-USD', 'AKT-USD', 'STORJ-USD', 'AR-USD', 'SC-USD', 'HOT-USD',
+    # Gaming / Metaverse
+    'SAND-USD', 'MANA-USD', 'AXS-USD', 'GALA-USD', 'ENJ-USD', 'CHZ-USD', 'FLOW-USD',
+    'IMX-USD', 'MAGIC-USD', 'ILV-USD', 'YGG-USD', 'MC-USD', 'ALICE-USD', 'TLM-USD',
+    'WEMIX-USD', 'GMT-USD', 'STEPN-USD', 'VOXEL-USD', 'BIGTIME-USD', 'PYR-USD',
+    # Meme Coins
+    'DOGE-USD', 'SHIB-USD', 'PEPE-USD', 'FLOKI-USD', 'BONK-USD', 'WIF-USD', 'BOME-USD',
+    'DOBO-USD', 'ELON-USD', 'AKITA-USD', 'KISHU-USD', 'SAITAMA-USD', 'SAMO-USD',
+    # DePIN
+    'HNT-USD', 'DIMO-USD', 'WIFI-USD', 'HONEY-USD', 'PAAL-USD', 'IO-USD', 'AIOZ-USD',
+    # AI / Big Data
+    'FET-USD', 'AGIX-USD', 'OCEAN-USD', 'RLC-USD', 'NMR-USD', 'PHA-USD', 'GLM-USD',
+    'AKASH-USD', 'RNDR-USD', 'LAT-USD', 'CTXC-USD', 'DBC-USD', 'OCTA-USD',
+    # Payments / Stablecoins (for volume analysis)
+    'XRP-USD', 'XLM-USD', 'LTC-USD', 'BCH-USD', 'XMR-USD', 'ZEC-USD', 'DASH-USD',
+    # Exchange Tokens
+    'BNB-USD', 'CRO-USD', 'FTT-USD', 'KCS-USD', 'HT-USD', 'OKB-USD', 'GT-USD',
+    'LEO-USD', 'MX-USD', 'BIT-USD', 'PLEX-USD', 'WOO-USD', 'JUP-USD', 'DRIFT-USD'
 ]
 
 # Sector mapping for stocks
@@ -98,6 +133,17 @@ SECTOR_MAPPING = {
     'NEE': 'Utilities', 'DUK': 'Utilities', 'SO': 'Utilities', 'AEP': 'Utilities',
     'EXC': 'Utilities', 'SRE': 'Utilities', 'XEL': 'Utilities', 'ED': 'Utilities',
     'D': 'Utilities', 'NGG': 'Utilities',
+    # AI/Machine Learning
+    'PLTR': 'AI', 'AI': 'AI', 'BBAI': 'AI', 'SOUN': 'AI', 'AMST': 'AI',
+    'VRNS': 'AI', 'PATH': 'AI', 'U': 'AI', 'CFLT': 'AI', 'GTLB': 'AI',
+    'MDB': 'AI', 'ESTC': 'AI', 'AYX': 'AI', 'DSGX': 'AI', 'TDC': 'AI',
+    'SMAR': 'AI', 'MOND': 'AI', 'INFA': 'AI', 'ASAN': 'AI', 'BOX': 'AI',
+    # Photonics/Optics
+    'COHR': 'Photonics', 'LITE': 'Photonics', 'IIVI': 'Photonics', 'NPTN': 'Photonics',
+    'LASR': 'Photonics', 'AVNW': 'Photonics', 'KOPN': 'Photonics', 'EMKR': 'Photonics',
+    'POET': 'Photonics', 'LPTH': 'Photonics', 'AOSL': 'Photonics', 'PLAB': 'Photonics',
+    'CAMT': 'Photonics', 'MRAM': 'Photonics', 'PXLW': 'Photonics', 'SIGA': 'Photonics',
+    'OLED': 'Photonics', 'UEIC': 'Photonics',
 }
 
 class TopPickResponse(BaseModel):
@@ -189,7 +235,7 @@ async def get_top_picks(
     max_score: float = Query(100, ge=0, le=100),
     min_confidence: float = Query(0, ge=0, le=100),
     recommendations: Optional[str] = Query(None, description="Comma-separated list: Strong Buy,Buy,Hold,Sell,Strong Sell"),
-    sector: str = Query("all", regex="^(all|Tech|Finance|Healthcare|Energy|Consumer|Industrial|CommServices|RealEstate|Materials|Utilities)$"),
+    sector: str = Query("all", regex="^(all|Tech|Finance|Healthcare|Energy|Consumer|Industrial|CommServices|RealEstate|Materials|Utilities|AI|Photonics)$"),
     db: Session = Depends(get_db)
 ):
     """
@@ -349,5 +395,20 @@ async def get_available_sectors():
             {"value": "RealEstate", "label": "Real Estate"},
             {"value": "Materials", "label": "Materials"},
             {"value": "Utilities", "label": "Utilities"},
+            {"value": "AI", "label": "AI / Machine Learning"},
+            {"value": "Photonics", "label": "Photonics / Optics"},
+        ],
+        "crypto_categories": [
+            {"value": "all", "label": "All Cryptos"},
+            {"value": "layer1", "label": "Layer 1 Blockchains"},
+            {"value": "defi", "label": "DeFi"},
+            {"value": "gaming", "label": "Gaming / Metaverse"},
+            {"value": "meme", "label": "Meme Coins"},
+            {"value": "ai", "label": "AI / Big Data"},
+            {"value": "depin", "label": "DePIN"},
+            {"value": "infra", "label": "Infrastructure / Oracles"},
+            {"value": "l2", "label": "Layer 2 / Scaling"},
+            {"value": "payments", "label": "Payments"},
+            {"value": "exchange", "label": "Exchange Tokens"},
         ]
     }
