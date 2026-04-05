@@ -4,7 +4,7 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react'
 
-const WS_URL = 'wss://chartwise-api.onrender.com/ws'
+const WS_URL = 'wss://chartwise-ai.onrender.com/ws'
 
 export interface WebSocketMessage {
   type: string

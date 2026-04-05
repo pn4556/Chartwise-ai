@@ -1,4 +1,4 @@
-const API_BASE = 'https://chartwise-api.onrender.com'
+const API_BASE = 'https://chartwise-ai.onrender.com'
 
 // Helper to get auth token
 function getAuthToken(): string | null {

@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 
-const API_BASE = 'https://chartwise-api.onrender.com'
+const API_BASE = 'https://chartwise-ai.onrender.com'
 
 interface User {
   id: number
