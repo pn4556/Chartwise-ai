@@ -13,11 +13,16 @@ interface SectorData {
 
 export default function SectorPerformance() {
   const [sectors, setSectors] = useState<SectorData[]>([
-    { name: 'Technology', avgScore: 72, topStock: 'NVDA', stockCount: 8, trend: 'up' },
-    { name: 'Healthcare', avgScore: 58, topStock: 'JNJ', stockCount: 5, trend: 'neutral' },
-    { name: 'Finance', avgScore: 64, topStock: 'JPM', stockCount: 6, trend: 'up' },
-    { name: 'Energy', avgScore: 45, topStock: 'XOM', stockCount: 4, trend: 'down' },
-    { name: 'Consumer', avgScore: 61, topStock: 'AMZN', stockCount: 7, trend: 'up' },
+    { name: 'Technology', avgScore: 72, topStock: 'NVDA', stockCount: 28, trend: 'up' },
+    { name: 'Healthcare', avgScore: 58, topStock: 'LLY', stockCount: 18, trend: 'neutral' },
+    { name: 'Finance', avgScore: 64, topStock: 'JPM', stockCount: 18, trend: 'up' },
+    { name: 'Energy', avgScore: 45, topStock: 'XOM', stockCount: 10, trend: 'down' },
+    { name: 'Consumer', avgScore: 61, topStock: 'AMZN', stockCount: 18, trend: 'up' },
+    { name: 'Industrial', avgScore: 52, topStock: 'CAT', stockCount: 10, trend: 'neutral' },
+    { name: 'Comm Services', avgScore: 59, topStock: 'META', stockCount: 10, trend: 'up' },
+    { name: 'Real Estate', avgScore: 48, topStock: 'PLD', stockCount: 10, trend: 'down' },
+    { name: 'Materials', avgScore: 50, topStock: 'LIN', stockCount: 10, trend: 'neutral' },
+    { name: 'Utilities', avgScore: 44, topStock: 'NEE', stockCount: 10, trend: 'down' },
   ])
 
   return (
@@ -70,15 +75,15 @@ export default function SectorPerformance() {
       {/* Summary stats */}
       <div className="grid grid-cols-3 gap-4 mt-6 pt-6 border-t border-slate-700">
         <div className="text-center">
-          <p className="text-2xl font-bold text-success-400">3</p>
+          <p className="text-2xl font-bold text-success-400">4</p>
           <p className="text-xs text-slate-500">Bullish Sectors</p>
         </div>
         <div className="text-center">
-          <p className="text-2xl font-bold text-yellow-400">1</p>
+          <p className="text-2xl font-bold text-yellow-400">3</p>
           <p className="text-xs text-slate-500">Neutral</p>
         </div>
         <div className="text-center">
-          <p className="text-2xl font-bold text-danger-400">1</p>
+          <p className="text-2xl font-bold text-danger-400">4</p>
           <p className="text-xs text-slate-500">Bearish</p>
         </div>
       </div>
