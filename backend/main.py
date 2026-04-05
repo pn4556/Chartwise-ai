@@ -16,6 +16,7 @@ from app.database import engine, Base, get_db
 from app.routers import stocks, crypto, predictions, paper_trading, watchlist
 from app.routers import enhanced_predictions
 from app.routers import auth
+from app.routers import ai_coach
 from app.services.data_service import DataService
 from app.services.prediction_service import PredictionService
 
@@ -43,6 +44,7 @@ app.include_router(predictions.router, prefix="/api/predictions", tags=["predict
 app.include_router(paper_trading.router, prefix="/api/paper-trading", tags=["paper-trading"])
 app.include_router(watchlist.router, prefix="/api/watchlist", tags=["watchlist"])
 app.include_router(enhanced_predictions.router)
+app.include_router(ai_coach.router)
 
 # Global scheduler reference
 scheduler = None
