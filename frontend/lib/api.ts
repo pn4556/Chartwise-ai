@@ -1,4 +1,4 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+const API_BASE = 'https://chartwise-api.onrender.com'
 
 // Helper to get auth token
 function getAuthToken(): string | null {
