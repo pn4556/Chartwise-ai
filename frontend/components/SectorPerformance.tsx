@@ -23,6 +23,8 @@ export default function SectorPerformance() {
     { name: 'Real Estate', avgScore: 48, topStock: 'PLD', stockCount: 10, trend: 'down' },
     { name: 'Materials', avgScore: 50, topStock: 'LIN', stockCount: 10, trend: 'neutral' },
     { name: 'Utilities', avgScore: 44, topStock: 'NEE', stockCount: 10, trend: 'down' },
+    { name: 'AI / ML', avgScore: 68, topStock: 'PLTR', stockCount: 20, trend: 'up' },
+    { name: 'Photonics', avgScore: 46, topStock: 'COHR', stockCount: 18, trend: 'neutral' },
   ])
 
   return (
@@ -75,11 +77,11 @@ export default function SectorPerformance() {
       {/* Summary stats */}
       <div className="grid grid-cols-3 gap-4 mt-6 pt-6 border-t border-slate-700">
         <div className="text-center">
-          <p className="text-2xl font-bold text-success-400">4</p>
+          <p className="text-2xl font-bold text-success-400">5</p>
           <p className="text-xs text-slate-500">Bullish Sectors</p>
         </div>
         <div className="text-center">
-          <p className="text-2xl font-bold text-yellow-400">3</p>
+          <p className="text-2xl font-bold text-yellow-400">4</p>
           <p className="text-xs text-slate-500">Neutral</p>
         </div>
         <div className="text-center">
