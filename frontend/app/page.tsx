@@ -5,7 +5,8 @@ import TopPicksList from '@/components/TopPicksList'
 import MarketOverview from '@/components/MarketOverview'
 import SectorPerformance from '@/components/SectorPerformance'
 import FilterBar from '@/components/FilterBar'
-import { Sparkles, TrendingUp, Shield } from 'lucide-react'
+import ActiveAlerts from '@/components/ActiveAlerts'
+import { Sparkles, TrendingUp, Shield, Bell } from 'lucide-react'
 
 export default function Home() {
   return (
@@ -43,6 +44,17 @@ export default function Home() {
         <section className="mb-12">
           <h2 className="text-2xl font-bold text-white mb-6">Market Overview</h2>
           <MarketOverview />
+        </section>
+
+        {/* Active Alerts */}
+        <section className="mb-12">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <Bell className="w-6 h-6 text-rose-400" />
+              <h2 className="text-2xl font-bold text-white">Active Alerts & Signals</h2>
+            </div>
+          </div>
+          <ActiveAlerts />
         </section>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
