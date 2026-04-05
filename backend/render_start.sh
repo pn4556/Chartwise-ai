@@ -45,7 +45,5 @@ exec uvicorn main:app \
     --host "${API_HOST:-0.0.0.0}" \
     --port "${API_PORT:-8000}" \
     --workers 1 \
-    --loop uvloop \
-    --http httptools \
     --access-log \
     --log-level info
