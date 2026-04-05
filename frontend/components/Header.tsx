@@ -1,6 +1,6 @@
 'use client'
 
-import { Zap, Menu, X, User, LogOut } from 'lucide-react'
+import { Zap, Menu, X, User, LogOut, Brain } from 'lucide-react'
 import { useState } from 'react'
 import Link from 'next/link'
 import { useAuth } from '@/lib/auth'
@@ -25,6 +25,10 @@ export default function Header() {
           <nav className="hidden md:flex items-center gap-6">
             <Link href="/" className="text-slate-300 hover:text-white transition-colors">
               Dashboard
+            </Link>
+            <Link href="/ai-coach" className="text-slate-300 hover:text-indigo-400 transition-colors flex items-center gap-1">
+              <Brain className="w-4 h-4" />
+              AI Coach
             </Link>
             <Link href="/watchlist" className="text-slate-300 hover:text-white transition-colors">
               Watchlist
@@ -74,6 +78,10 @@ export default function Header() {
             <nav className="flex flex-col gap-4">
               <Link href="/" className="text-slate-300 hover:text-white transition-colors">
                 Dashboard
+              </Link>
+              <Link href="/ai-coach" className="text-slate-300 hover:text-indigo-400 transition-colors flex items-center gap-2">
+                <Brain className="w-4 h-4" />
+                AI Coach
               </Link>
               <Link href="/watchlist" className="text-slate-300 hover:text-white transition-colors">
                 Watchlist
