@@ -30,7 +30,7 @@ export default function Home() {
             </div>
             <div className="flex items-center gap-2 text-slate-300">
               <TrendingUp className="w-5 h-5 text-success-400" />
-              <span>Top 10 Daily Picks</span>
+              <span>Top 20 Daily Picks</span>
             </div>
             <div className="flex items-center gap-2 text-slate-300">
               <Shield className="w-5 h-5 text-purple-400" />
@@ -56,7 +56,7 @@ export default function Home() {
             <FilterBar onFilterChange={(filters) => console.log('Filters:', filters)} />
             
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-white">Top 10 Strongest Setups</h2>
+              <h2 className="text-2xl font-bold text-white">Top 20 Strongest Setups</h2>
               <span className="text-sm text-slate-500">Updates every 15 minutes</span>
             </div>
             <TopPicksList />

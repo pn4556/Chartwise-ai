@@ -26,7 +26,7 @@ export default function TopPicksList() {
   useEffect(() => {
     async function loadPicks() {
       try {
-        const data = await fetchTopPicks(10)
+        const data = await fetchTopPicks(20)
         setPicks(data)
       } catch (err) {
         setError('Failed to load top picks')
