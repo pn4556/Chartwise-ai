@@ -32,8 +32,8 @@ fi
 # Log configuration (without sensitive data)
 echo ""
 echo "📊 Configuration:"
-echo "  - Host: ${API_HOST:-0.0.0.0}"
-echo "  - Port: ${API_PORT:-8000}"
+echo "  - Host: 0.0.0.0"
+echo "  - Port: ${PORT:-8000}"
 echo "  - Database: PostgreSQL (configured via DATABASE_URL)"
 echo "  - Frontend URL: ${FRONTEND_URL:-not set}"
 echo "  - Scheduler: ${ENABLE_SCHEDULER:-true}"
@@ -42,8 +42,8 @@ echo ""
 # Start the application
 echo "🌟 Starting Uvicorn server..."
 exec uvicorn main:app \
-    --host "${API_HOST:-0.0.0.0}" \
-    --port "${API_PORT:-8000}" \
+    --host "0.0.0.0" \
+    --port "${PORT:-8000}" \
     --workers 1 \
     --access-log \
     --log-level info
