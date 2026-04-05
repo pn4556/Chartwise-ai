@@ -16,10 +16,33 @@ router = APIRouter()
 
 # Default stock universe for scanning
 DEFAULT_STOCKS = [
+    # Tech
     'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA', 'NVDA', 'META', 'NFLX',
     'AMD', 'INTC', 'CRM', 'ADBE', 'PYPL', 'UBER', 'COIN', 'ROKU',
     'AXON', 'SHOP', 'ZM', 'DOCU', 'PLTR', 'SNOW', 'CRWD', 'NET',
-    'DDOG', 'OKTA', 'TWLO', 'FSLY', 'PINS', 'LYFT', 'ABNB', 'DASH'
+    'DDOG', 'OKTA', 'TWLO', 'FSLY', 'PINS', 'LYFT', 'ABNB', 'DASH',
+    'CSCO', 'ORCL', 'IBM', 'QCOM', 'TXN', 'MU', 'PANW', 'FTNT',
+    # Finance
+    'JPM', 'BAC', 'GS', 'MS', 'WFC', 'C', 'BLK', 'AXP', 'V', 'MA',
+    'SCHW', 'PNC', 'TFC', 'USB', 'COF', 'PYPL', 'COIN', 'SQ',
+    # Healthcare
+    'JNJ', 'PFE', 'MRK', 'ABBV', 'LLY', 'TMO', 'ABT', 'DHR', 'BMY', 'UNH',
+    'GILD', 'AMGN', 'VRTX', 'REGN', 'BIIB', 'ZTS', 'MRNA', 'BNTX',
+    # Energy
+    'XOM', 'CVX', 'COP', 'EOG', 'SLB', 'OXY', 'MPC', 'VLO', 'PSX', 'WMB',
+    # Consumer
+    'AMZN', 'TSLA', 'NFLX', 'UBER', 'LYFT', 'ABNB', 'DASH', 'MAR', 'HLT',
+    'MCD', 'SBUX', 'NKE', 'LULU', 'TGT', 'WMT', 'COST', 'HD', 'LOW',
+    # Industrial
+    'AXON', 'CAT', 'BA', 'GE', 'RTX', 'LMT', 'NOC', 'HON', 'UPS', 'FDX',
+    # Communication Services
+    'GOOGL', 'META', 'NFLX', 'DIS', 'CMCSA', 'VZ', 'T', 'TMUS', 'ATVI', 'EA',
+    # Real Estate (REITs)
+    'AMT', 'PLD', 'CCI', 'PSA', 'O', 'SPG', 'WELL', 'AVB', 'EQR', 'DLR',
+    # Materials
+    'LIN', 'APD', 'SHW', 'FCX', 'NEM', 'DOW', 'DD', 'ECL', 'NUE', 'VMC',
+    # Utilities
+    'NEE', 'DUK', 'SO', 'AEP', 'EXC', 'SRE', 'XEL', 'ED', 'D', 'NGG'
 ]
 
 DEFAULT_CRYPTOS = [
@@ -29,23 +52,52 @@ DEFAULT_CRYPTOS = [
 
 # Sector mapping for stocks
 SECTOR_MAPPING = {
-    # Tech
+    # Technology
     'AAPL': 'Tech', 'MSFT': 'Tech', 'GOOGL': 'Tech', 'NVDA': 'Tech', 'META': 'Tech',
     'AMD': 'Tech', 'INTC': 'Tech', 'CRM': 'Tech', 'ADBE': 'Tech', 'SHOP': 'Tech',
     'ZM': 'Tech', 'DOCU': 'Tech', 'PLTR': 'Tech', 'SNOW': 'Tech', 'CRWD': 'Tech',
     'NET': 'Tech', 'DDOG': 'Tech', 'OKTA': 'Tech', 'TWLO': 'Tech', 'FSLY': 'Tech',
-    'ROKU': 'Tech', 'PINS': 'Tech',
+    'ROKU': 'Tech', 'PINS': 'Tech', 'CSCO': 'Tech', 'ORCL': 'Tech', 'IBM': 'Tech',
+    'QCOM': 'Tech', 'TXN': 'Tech', 'MU': 'Tech', 'PANW': 'Tech', 'FTNT': 'Tech',
     # Finance
-    'PYPL': 'Finance', 'COIN': 'Finance',
+    'JPM': 'Finance', 'BAC': 'Finance', 'GS': 'Finance', 'MS': 'Finance', 'WFC': 'Finance',
+    'C': 'Finance', 'BLK': 'Finance', 'AXP': 'Finance', 'V': 'Finance', 'MA': 'Finance',
+    'SCHW': 'Finance', 'PNC': 'Finance', 'TFC': 'Finance', 'USB': 'Finance', 'COF': 'Finance',
+    'PYPL': 'Finance', 'COIN': 'Finance', 'SQ': 'Finance',
     # Healthcare
-    # (Add healthcare stocks here if available)
+    'JNJ': 'Healthcare', 'PFE': 'Healthcare', 'MRK': 'Healthcare', 'ABBV': 'Healthcare',
+    'LLY': 'Healthcare', 'TMO': 'Healthcare', 'ABT': 'Healthcare', 'DHR': 'Healthcare',
+    'BMY': 'Healthcare', 'UNH': 'Healthcare', 'GILD': 'Healthcare', 'AMGN': 'Healthcare',
+    'VRTX': 'Healthcare', 'REGN': 'Healthcare', 'BIIB': 'Healthcare', 'ZTS': 'Healthcare',
+    'MRNA': 'Healthcare', 'BNTX': 'Healthcare',
     # Energy
-    # (Add energy stocks here if available)
+    'XOM': 'Energy', 'CVX': 'Energy', 'COP': 'Energy', 'EOG': 'Energy', 'SLB': 'Energy',
+    'OXY': 'Energy', 'MPC': 'Energy', 'VLO': 'Energy', 'PSX': 'Energy', 'WMB': 'Energy',
     # Consumer
     'AMZN': 'Consumer', 'TSLA': 'Consumer', 'NFLX': 'Consumer', 'UBER': 'Consumer',
-    'LYFT': 'Consumer', 'ABNB': 'Consumer', 'DASH': 'Consumer',
+    'LYFT': 'Consumer', 'ABNB': 'Consumer', 'DASH': 'Consumer', 'MAR': 'Consumer',
+    'HLT': 'Consumer', 'MCD': 'Consumer', 'SBUX': 'Consumer', 'NKE': 'Consumer',
+    'LULU': 'Consumer', 'TGT': 'Consumer', 'WMT': 'Consumer', 'COST': 'Consumer',
+    'HD': 'Consumer', 'LOW': 'Consumer',
     # Industrial
-    'AXON': 'Industrial',
+    'AXON': 'Industrial', 'CAT': 'Industrial', 'BA': 'Industrial', 'GE': 'Industrial',
+    'RTX': 'Industrial', 'LMT': 'Industrial', 'NOC': 'Industrial', 'HON': 'Industrial',
+    'UPS': 'Industrial', 'FDX': 'Industrial',
+    # Communication Services
+    'DIS': 'CommServices', 'CMCSA': 'CommServices', 'VZ': 'CommServices', 'T': 'CommServices',
+    'TMUS': 'CommServices', 'ATVI': 'CommServices', 'EA': 'CommServices',
+    # Real Estate
+    'AMT': 'RealEstate', 'PLD': 'RealEstate', 'CCI': 'RealEstate', 'PSA': 'RealEstate',
+    'O': 'RealEstate', 'SPG': 'RealEstate', 'WELL': 'RealEstate', 'AVB': 'RealEstate',
+    'EQR': 'RealEstate', 'DLR': 'RealEstate',
+    # Materials
+    'LIN': 'Materials', 'APD': 'Materials', 'SHW': 'Materials', 'FCX': 'Materials',
+    'NEM': 'Materials', 'DOW': 'Materials', 'DD': 'Materials', 'ECL': 'Materials',
+    'NUE': 'Materials', 'VMC': 'Materials',
+    # Utilities
+    'NEE': 'Utilities', 'DUK': 'Utilities', 'SO': 'Utilities', 'AEP': 'Utilities',
+    'EXC': 'Utilities', 'SRE': 'Utilities', 'XEL': 'Utilities', 'ED': 'Utilities',
+    'D': 'Utilities', 'NGG': 'Utilities',
 }
 
 class TopPickResponse(BaseModel):
@@ -137,7 +189,7 @@ async def get_top_picks(
     max_score: float = Query(100, ge=0, le=100),
     min_confidence: float = Query(0, ge=0, le=100),
     recommendations: Optional[str] = Query(None, description="Comma-separated list: Strong Buy,Buy,Hold,Sell,Strong Sell"),
-    sector: str = Query("all", regex="^(all|Tech|Finance|Healthcare|Energy|Consumer)$"),
+    sector: str = Query("all", regex="^(all|Tech|Finance|Healthcare|Energy|Consumer|Industrial|CommServices|RealEstate|Materials|Utilities)$"),
     db: Session = Depends(get_db)
 ):
     """
@@ -292,5 +344,10 @@ async def get_available_sectors():
             {"value": "Healthcare", "label": "Healthcare"},
             {"value": "Energy", "label": "Energy"},
             {"value": "Consumer", "label": "Consumer"},
+            {"value": "Industrial", "label": "Industrial"},
+            {"value": "CommServices", "label": "Communication Services"},
+            {"value": "RealEstate", "label": "Real Estate"},
+            {"value": "Materials", "label": "Materials"},
+            {"value": "Utilities", "label": "Utilities"},
         ]
     }
