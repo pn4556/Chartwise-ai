@@ -1,11 +1,12 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { fetchTopPicks } from '@/lib/api'
 import { formatPrice, getRecommendationColor } from '@/lib/utils'
 import ScoreBadge from './ScoreBadge'
 import { TrendingUp, TrendingDown, Activity } from 'lucide-react'
 import Link from 'next/link'
+import type { FilterOptions } from './FilterBar'
 
 interface TopPick {
   rank: number
@@ -16,9 +17,14 @@ interface TopPick {
   recommendation: string
   current_price: number
   key_signals: string[]
+  sector?: string
 }
 
-export default function TopPicksList() {
+interface TopPicksListProps {
+  filters?: FilterOptions
+}
+
+export default function TopPicksList({ filters }: TopPicksListProps) {
   const [picks, setPicks] = useState<TopPick[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -26,7 +32,7 @@ export default function TopPicksList() {
   useEffect(() => {
     async function loadPicks() {
       try {
-        const data = await fetchTopPicks(20)
+        const data = await fetchTopPicks(50) // Fetch more to allow filtering
         setPicks(data)
       } catch (err) {
         setError('Failed to load top picks')
@@ -39,6 +45,34 @@ export default function TopPicksList() {
     const interval = setInterval(loadPicks, 60000) // Refresh every minute
     return () => clearInterval(interval)
   }, [])
+
+  // Apply filters
+  const filteredPicks = useMemo(() => {
+    if (!filters) return picks.slice(0, 20)
+
+    return picks.filter((pick) => {
+      // Asset Type Filter
+      if (filters.assetType === 'stocks' && pick.asset_type !== 'stock') return false
+      if (filters.assetType === 'crypto' && pick.asset_type !== 'crypto') return false
+
+      // Score Range Filter
+      if (pick.bullish_score < filters.minScore || pick.bullish_score > filters.maxScore) return false
+
+      // Confidence Filter
+      if (pick.confidence < filters.minConfidence) return false
+
+      // Recommendation Filter
+      if (filters.recommendations.length > 0 && !filters.recommendations.includes(pick.recommendation)) return false
+
+      // Sector Filter (only applies to stocks)
+      if (filters.sector !== 'all' && pick.asset_type === 'stock') {
+        // Note: Sector data might not be available in all picks
+        if (pick.sector && pick.sector !== filters.sector) return false
+      }
+
+      return true
+    }).slice(0, 20)
+  }, [picks, filters])
 
   if (loading) {
     return (
@@ -58,9 +92,19 @@ export default function TopPicksList() {
     )
   }
 
+  // Show empty state if no picks match filters
+  if (!loading && !error && filteredPicks.length === 0) {
+    return (
+      <div className="text-center py-12 bg-slate-800/50 rounded-xl border border-slate-700">
+        <p className="text-slate-400 mb-2">No picks match your filters</p>
+        <p className="text-slate-500 text-sm">Try adjusting your filter criteria</p>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-3">
-      {picks.map((pick) => (
+      {filteredPicks.map((pick) => (
         <Link
           key={pick.symbol}
           href={`/stock/${pick.symbol}`}

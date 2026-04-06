@@ -1,14 +1,28 @@
 'use client'
 
+import { useState } from 'react'
 import Header from '@/components/Header'
 import TopPicksList from '@/components/TopPicksList'
 import MarketOverview from '@/components/MarketOverview'
 import SectorPerformance from '@/components/SectorPerformance'
-import FilterBar from '@/components/FilterBar'
+import FilterBar, { type FilterOptions } from '@/components/FilterBar'
 import ActiveAlerts from '@/components/ActiveAlerts'
 import { Sparkles, TrendingUp, Shield, Bell } from 'lucide-react'
 
 export default function Home() {
+  const [filters, setFilters] = useState<FilterOptions>({
+    assetType: 'all',
+    minScore: 0,
+    maxScore: 100,
+    minConfidence: 0,
+    recommendations: [],
+    sector: 'all'
+  })
+
+  const handleFilterChange = (newFilters: FilterOptions) => {
+    setFilters(newFilters)
+  }
+
   return (
     <div className="min-h-screen bg-slate-950">
       <Header />
@@ -65,13 +79,13 @@ export default function Home() {
 
           {/* Top Picks with Filters */}
           <div className="lg:col-span-2">
-            <FilterBar onFilterChange={(filters) => console.log('Filters:', filters)} />
+            <FilterBar onFilterChange={handleFilterChange} />
             
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-white">Top 20 Strongest Setups</h2>
               <span className="text-sm text-slate-500">Updates every 15 minutes</span>
             </div>
-            <TopPicksList />
+            <TopPicksList filters={filters} />
           </div>
         </div>
       </main>
