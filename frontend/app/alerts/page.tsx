@@ -31,7 +31,12 @@ export default function AlertsPage() {
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<'all' | 'pattern' | 'indicator' | 'price' | 'unacknowledged'>('all')
   const [scanning, setScanning] = useState(false)
-  const [stats, setStats] = useState({
+  const [stats, setStats] = useState<{
+    total: number
+    unacknowledged: number
+    by_type: Record<string, number>
+    by_severity: Record<string, number>
+  }>({
     total: 0,
     unacknowledged: 0,
     by_type: {},

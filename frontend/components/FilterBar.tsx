@@ -12,8 +12,6 @@ export interface FilterOptions {
   sector: string
 }
 
-export type { FilterOptions as default }
-
 interface FilterBarProps {
   onFilterChange: (filters: FilterOptions) => void
 }

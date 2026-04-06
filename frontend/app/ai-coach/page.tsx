@@ -31,6 +31,7 @@ interface SectorAnalysis {
   outlook: string
   confidence: number
   ai_score: number
+  stocks_analyzed: number
   top_picks: {symbol: string, score: number}[]
   insight: string
   catalysts: string[]
