@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Filter, SlidersHorizontal, X } from 'lucide-react'
 
 export interface FilterOptions {
-  assetType: 'all' | 'stocks' | 'crypto'
+  assetType: 'all' | 'stocks' | 'crypto' | 'commodity'
   minScore: number
   maxScore: number
   minConfidence: number
@@ -43,6 +43,17 @@ export default function FilterBar({ onFilterChange }: FilterBarProps) {
     recommendations: [],
     sector: 'all'
   })
+
+  // Helper to get asset type display label
+  const getAssetTypeLabel = (type: string) => {
+    const labels: Record<string, string> = {
+      'all': 'All',
+      'stocks': 'Stocks Only',
+      'crypto': 'Crypto Only',
+      'commodity': 'Commodities Only'
+    }
+    return labels[type] || type
+  }
 
   const handleChange = <K extends keyof FilterOptions>(key: K, value: FilterOptions[K]) => {
     const newFilters = { ...filters, [key]: value }
@@ -121,15 +132,16 @@ export default function FilterBar({ onFilterChange }: FilterBarProps) {
             {/* Asset Type */}
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-2">Asset Type</label>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 {[
                   { value: 'all', label: 'All' },
                   { value: 'stocks', label: 'Stocks Only' },
                   { value: 'crypto', label: 'Crypto Only' },
+                  { value: 'commodity', label: 'Commodities Only' },
                 ].map((option) => (
                   <button
                     key={option.value}
-                    onClick={() => handleChange('assetType', option.value as 'all' | 'stocks' | 'crypto')}
+                    onClick={() => handleChange('assetType', option.value as 'all' | 'stocks' | 'crypto' | 'commodity')}
                     className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
                       filters.assetType === option.value
                         ? 'bg-primary-500 text-white'
@@ -269,7 +281,7 @@ export default function FilterBar({ onFilterChange }: FilterBarProps) {
                 <span className="text-sm text-slate-400">Active:</span>
                 {filters.assetType !== 'all' && (
                   <span className="px-2 py-1 bg-slate-700 text-slate-300 text-xs rounded-md">
-                    {filters.assetType === 'stocks' ? 'Stocks Only' : 'Crypto Only'}
+                    {getAssetTypeLabel(filters.assetType)}
                   </span>
                 )}
                 {(filters.minScore > 0 || filters.maxScore < 100) && (

@@ -54,6 +54,7 @@ export default function TopPicksList({ filters }: TopPicksListProps) {
       // Asset Type Filter
       if (filters.assetType === 'stocks' && pick.asset_type !== 'stock') return false
       if (filters.assetType === 'crypto' && pick.asset_type !== 'crypto') return false
+      if (filters.assetType === 'commodity' && pick.asset_type !== 'commodity') return false
 
       // Score Range Filter
       if (pick.bullish_score < filters.minScore || pick.bullish_score > filters.maxScore) return false
@@ -119,8 +120,14 @@ export default function TopPicksList({ filters }: TopPicksListProps) {
               <div>
                 <div className="flex items-center gap-2">
                   <h3 className="text-xl font-bold text-white">{pick.symbol}</h3>
-                  <span className={`text-xs px-2 py-0.5 rounded ${pick.asset_type === 'crypto' ? 'bg-purple-500/20 text-purple-300' : 'bg-blue-500/20 text-blue-300'}`}>
-                    {pick.asset_type}
+                  <span className={`text-xs px-2 py-0.5 rounded ${
+                    pick.asset_type === 'crypto' 
+                      ? 'bg-purple-500/20 text-purple-300' 
+                      : pick.asset_type === 'commodity'
+                        ? 'bg-amber-500/20 text-amber-300'
+                        : 'bg-blue-500/20 text-blue-300'
+                  }`}>
+                    {pick.asset_type === 'commodity' ? 'commodity' : pick.asset_type}
                   </span>
                 </div>
                 <p className="text-slate-400 text-sm">

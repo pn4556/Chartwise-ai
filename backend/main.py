@@ -18,6 +18,7 @@ from app.routers import enhanced_predictions
 from app.routers import auth
 from app.routers import ai_coach
 from app.routers import alerts
+from app.routers import commodities
 from app.services.data_service import DataService
 from app.services.prediction_service import PredictionService
 
@@ -41,6 +42,7 @@ app.add_middleware(
 app.include_router(auth.router, prefix="/api/auth", tags=["authentication"])
 app.include_router(stocks.router, prefix="/api/stocks", tags=["stocks"])
 app.include_router(crypto.router, prefix="/api/crypto", tags=["crypto"])
+app.include_router(commodities.router, prefix="/api/commodities", tags=["commodities"])
 app.include_router(predictions.router, prefix="/api/predictions", tags=["predictions"])
 app.include_router(paper_trading.router, prefix="/api/paper-trading", tags=["paper-trading"])
 app.include_router(watchlist.router, prefix="/api/watchlist", tags=["watchlist"])

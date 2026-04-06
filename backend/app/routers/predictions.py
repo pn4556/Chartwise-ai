@@ -85,6 +85,39 @@ DEFAULT_CRYPTOS = [
     'LEO-USD', 'MX-USD', 'BIT-USD', 'PLEX-USD', 'WOO-USD', 'JUP-USD', 'DRIFT-USD'
 ]
 
+DEFAULT_COMMODITIES = [
+    # Precious Metals
+    'GC=F',     # Gold
+    'SI=F',     # Silver
+    'PL=F',     # Platinum
+    'PA=F',     # Palladium
+    # Energy
+    'CL=F',     # Crude Oil (WTI)
+    'BZ=F',     # Brent Crude Oil
+    'NG=F',     # Natural Gas
+    'RB=F',     # RBOB Gasoline
+    'HO=F',     # Heating Oil
+    # Industrial Metals
+    'HG=F',     # Copper
+    'ALI=F',    # Aluminum
+    'ZN=F',     # Zinc
+    'NI=F',     # Nickel
+    'PB=F',     # Lead
+    # Agriculture
+    'ZC=F',     # Corn
+    'ZW=F',     # Wheat
+    'ZS=F',     # Soybeans
+    'KC=F',     # Coffee
+    'CT=F',     # Cotton
+    'CC=F',     # Cocoa
+    'SB=F',     # Sugar
+    'LC=F',     # Live Cattle
+    'LH=F',     # Lean Hogs
+    # Softs
+    'OJ=F',     # Orange Juice
+    'DX=F',     # US Dollar Index
+]
+
 # Sector mapping for stocks
 SECTOR_MAPPING = {
     # Technology
@@ -171,8 +204,13 @@ def get_sector(symbol: str) -> Optional[str]:
     return SECTOR_MAPPING.get(symbol)
 
 def get_asset_type(symbol: str) -> str:
-    """Determine if symbol is crypto or stock"""
-    return 'crypto' if '-USD' in symbol else 'stock'
+    """Determine if symbol is crypto, stock, or commodity"""
+    if '-USD' in symbol:
+        return 'crypto'
+    elif symbol.endswith('=F') or symbol in DEFAULT_COMMODITIES:
+        return 'commodity'
+    else:
+        return 'stock'
 
 def matches_recommendation_filter(recommendation: str, filter_recs: List[str]) -> bool:
     """Check if recommendation matches any of the filter recommendations"""
@@ -203,7 +241,9 @@ def apply_filters(
         # Asset type filter
         if asset_type != 'all':
             symbol_type = get_asset_type(score.symbol)
-            if symbol_type != asset_type:
+            # Handle 'stocks' plural form
+            check_type = 'stock' if asset_type == 'stocks' else asset_type
+            if symbol_type != check_type:
                 continue
         
         # Bullish score range filter
@@ -230,7 +270,7 @@ def apply_filters(
 @router.get("/top-picks", response_model=List[TopPickResponse])
 async def get_top_picks(
     limit: int = Query(10, ge=1, le=50),
-    asset_type: str = Query("all", regex="^(all|stocks|crypto)$"),
+    asset_type: str = Query("all", regex="^(all|stocks|crypto|commodity)$"),
     min_score: float = Query(0, ge=0, le=100),
     max_score: float = Query(100, ge=0, le=100),
     min_confidence: float = Query(0, ge=0, le=100),
@@ -243,7 +283,7 @@ async def get_top_picks(
     
     Query Parameters:
     - limit: Number of results to return (1-50, default: 10)
-    - asset_type: Filter by asset type (all, stocks, crypto)
+    - asset_type: Filter by asset type (all, stocks, crypto, commodity)
     - min_score: Minimum bullish score (0-100)
     - max_score: Maximum bullish score (0-100)
     - min_confidence: Minimum confidence level (0-100)
@@ -262,6 +302,9 @@ async def get_top_picks(
     
     if asset_type in ['all', 'crypto']:
         symbols.extend(DEFAULT_CRYPTOS)
+    
+    if asset_type in ['all', 'commodity']:
+        symbols.extend(DEFAULT_COMMODITIES)
     
     # Scan all symbols
     results = TechnicalAnalysisService.scan_multiple(symbols)
@@ -315,7 +358,7 @@ async def get_top_picks(
 @router.get("/market-overview", response_model=MarketOverviewResponse)
 async def get_market_overview(db: Session = Depends(get_db)):
     """Get overall market sentiment based on tracked assets"""
-    all_symbols = DEFAULT_STOCKS + DEFAULT_CRYPTOS
+    all_symbols = DEFAULT_STOCKS + DEFAULT_CRYPTOS + DEFAULT_COMMODITIES
     
     results = TechnicalAnalysisService.scan_multiple(all_symbols)
     
@@ -410,5 +453,14 @@ async def get_available_sectors():
             {"value": "l2", "label": "Layer 2 / Scaling"},
             {"value": "payments", "label": "Payments"},
             {"value": "exchange", "label": "Exchange Tokens"},
+        ],
+        "commodity_categories": [
+            {"value": "all", "label": "All Commodities"},
+            {"value": "precious_metals", "label": "Precious Metals (Gold, Silver, Platinum)"},
+            {"value": "energy", "label": "Energy (Oil, Gas)"},
+            {"value": "industrial_metals", "label": "Industrial Metals (Copper, Aluminum)"},
+            {"value": "agriculture", "label": "Agriculture (Corn, Wheat, Soybeans)"},
+            {"value": "softs", "label": "Softs (Coffee, Cotton, Sugar)"},
+            {"value": "livestock", "label": "Livestock (Cattle, Hogs)"},
         ]
     }
