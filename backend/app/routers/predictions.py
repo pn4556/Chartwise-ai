@@ -422,6 +422,72 @@ async def scan_custom_symbols(
         "predictions": filtered_results
     }
 
+@router.get("/sectors/{sector}")
+async def get_sector_details(sector: str, db: Session = Depends(get_db)):
+    """
+    Get detailed information about a specific sector including all stocks and their scores
+    """
+    # Validate sector
+    valid_sectors = ['Tech', 'Finance', 'Healthcare', 'Energy', 'Consumer', 
+                     'Industrial', 'CommServices', 'RealEstate', 'Materials', 
+                     'Utilities', 'AI', 'Photonics']
+    
+    if sector not in valid_sectors:
+        raise HTTPException(status_code=400, detail=f"Invalid sector. Valid sectors: {', '.join(valid_sectors)}")
+    
+    # Get all stocks in this sector
+    sector_stocks = [symbol for symbol, sec in SECTOR_MAPPING.items() if sec == sector]
+    
+    if not sector_stocks:
+        raise HTTPException(status_code=404, detail=f"No stocks found for sector: {sector}")
+    
+    # Analyze all stocks in sector
+    results = TechnicalAnalysisService.scan_multiple(sector_stocks)
+    
+    # Sort by bullish score
+    results.sort(key=lambda x: x.bullish_score, reverse=True)
+    
+    # Calculate sector statistics
+    avg_score = sum(r.bullish_score for r in results) / len(results) if results else 0
+    avg_confidence = sum(r.confidence for r in results) / len(results) if results else 0
+    bullish_count = sum(1 for r in results if r.bullish_score >= 60)
+    bearish_count = sum(1 for r in results if r.bullish_score <= 40)
+    neutral_count = len(results) - bullish_count - bearish_count
+    
+    # Get current prices for top stocks
+    stocks_with_details = []
+    for score in results:
+        data = TechnicalAnalysisService.get_data(score.symbol, days=2)
+        current_price = data[-1]['close'] if data else 0
+        change_pct = 0
+        if data and len(data) >= 2:
+            change_pct = ((data[-1]['close'] - data[-2]['close']) / data[-2]['close']) * 100
+        
+        stocks_with_details.append({
+            "symbol": score.symbol,
+            "bullish_score": score.bullish_score,
+            "confidence": score.confidence,
+            "recommendation": score.recommendation,
+            "current_price": round(current_price, 2),
+            "change_percent": round(change_pct, 2),
+            "signals": score.signals
+        })
+    
+    return {
+        "sector": sector,
+        "total_stocks": len(sector_stocks),
+        "analyzed": len(results),
+        "statistics": {
+            "average_score": round(avg_score, 1),
+            "average_confidence": round(avg_confidence, 1),
+            "bullish_count": bullish_count,
+            "bearish_count": bearish_count,
+            "neutral_count": neutral_count
+        },
+        "top_performer": stocks_with_details[0] if stocks_with_details else None,
+        "stocks": stocks_with_details
+    }
+
 @router.get("/sectors")
 async def get_available_sectors():
     """Get list of available sectors for filtering"""

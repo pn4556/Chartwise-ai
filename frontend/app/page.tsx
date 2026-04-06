@@ -5,6 +5,7 @@ import Header from '@/components/Header'
 import TopPicksList from '@/components/TopPicksList'
 import MarketOverview from '@/components/MarketOverview'
 import SectorPerformance from '@/components/SectorPerformance'
+import SectorStocks from '@/components/SectorStocks'
 import FilterBar, { type FilterOptions } from '@/components/FilterBar'
 import ActiveAlerts from '@/components/ActiveAlerts'
 import { Sparkles, TrendingUp, Shield, Bell } from 'lucide-react'
@@ -18,9 +19,19 @@ export default function Home() {
     recommendations: [],
     sector: 'all'
   })
+  
+  const [selectedSector, setSelectedSector] = useState<string | null>(null)
 
   const handleFilterChange = (newFilters: FilterOptions) => {
     setFilters(newFilters)
+  }
+  
+  const handleSectorClick = (sector: string) => {
+    setSelectedSector(sector === selectedSector ? null : sector)
+  }
+  
+  const handleBackToSectors = () => {
+    setSelectedSector(null)
   }
 
   return (
@@ -72,12 +83,22 @@ export default function Home() {
         </section>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
-          {/* Sector Performance */}
+          {/* Sector Performance - Left Column */}
           <div className="lg:col-span-1">
-            <SectorPerformance />
+            {!selectedSector ? (
+              <SectorPerformance 
+                onSectorClick={handleSectorClick}
+                selectedSector={selectedSector}
+              />
+            ) : (
+              <SectorStocks 
+                sector={selectedSector}
+                onBack={handleBackToSectors}
+              />
+            )}
           </div>
 
-          {/* Top Picks with Filters */}
+          {/* Top Picks with Filters - Right Columns */}
           <div className="lg:col-span-2">
             <FilterBar onFilterChange={handleFilterChange} />
             
