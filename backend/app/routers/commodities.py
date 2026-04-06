@@ -9,9 +9,26 @@ from pydantic import BaseModel
 
 from app.database import get_db
 from app.services.technical_analysis import TechnicalAnalysisService
-from app.routers.predictions import DEFAULT_COMMODITIES, get_asset_type
 
 router = APIRouter()
+
+# Commodity symbols list (duplicated here to avoid circular imports)
+DEFAULT_COMMODITIES = [
+    # Precious Metals
+    'GC=F', 'SI=F', 'PL=F', 'PA=F',
+    # Energy
+    'CL=F', 'BZ=F', 'NG=F', 'RB=F', 'HO=F',
+    # Industrial Metals
+    'HG=F', 'ALI=F', 'ZN=F', 'NI=F', 'PB=F',
+    # Agriculture
+    'ZC=F', 'ZW=F', 'ZS=F',
+    # Softs
+    'KC=F', 'CT=F', 'CC=F', 'SB=F',
+    # Livestock
+    'LC=F', 'LH=F',
+    # Others
+    'OJ=F', 'DX=F',
+]
 
 # Commodity name mapping
 COMMODITY_NAMES = {
