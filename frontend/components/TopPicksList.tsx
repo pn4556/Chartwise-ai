@@ -32,17 +32,22 @@ export default function TopPicksList({ filters }: TopPicksListProps) {
   useEffect(() => {
     async function loadPicks() {
       try {
-        const data = await fetchTopPicks(50) // Fetch more to allow filtering
+        setLoading(true)
+        setError(null)
+        // Fetch with timeout and smaller limit for faster response
+        const data = await fetchTopPicks(20)
         setPicks(data)
       } catch (err) {
-        setError('Failed to load top picks')
+        console.error('Error loading top picks:', err)
+        setError('Failed to load top picks. Please try again.')
       } finally {
         setLoading(false)
       }
     }
 
     loadPicks()
-    const interval = setInterval(loadPicks, 60000) // Refresh every minute
+    // Refresh every 5 minutes instead of every minute to reduce load
+    const interval = setInterval(loadPicks, 300000)
     return () => clearInterval(interval)
   }, [])
 
@@ -77,18 +82,30 @@ export default function TopPicksList({ filters }: TopPicksListProps) {
 
   if (loading) {
     return (
-      <div className="animate-pulse space-y-4">
-        {[...Array(5)].map((_, i) => (
-          <div key={i} className="h-20 bg-slate-800 rounded-lg" />
-        ))}
+      <div className="space-y-4">
+        <div className="flex items-center justify-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-400"></div>
+          <span className="ml-3 text-slate-400">Analyzing markets...</span>
+        </div>
+        <div className="animate-pulse space-y-4">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="h-20 bg-slate-800 rounded-lg" />
+          ))}
+        </div>
       </div>
     )
   }
 
   if (error) {
     return (
-      <div className="text-danger-400 text-center py-8">
-        {error}
+      <div className="text-center py-8 bg-slate-800/50 rounded-xl border border-slate-700">
+        <p className="text-danger-400 mb-2">{error}</p>
+        <button 
+          onClick={() => window.location.reload()}
+          className="mt-4 px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg transition-colors"
+        >
+          Retry
+        </button>
       </div>
     )
   }
