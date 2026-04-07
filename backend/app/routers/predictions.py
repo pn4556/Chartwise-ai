@@ -5,14 +5,31 @@ Top 10 and prediction-related endpoints
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from pydantic import BaseModel
-from datetime import datetime
+from datetime import datetime, timedelta
+import time
 
 from app.database import get_db
 from app.services.technical_analysis import TechnicalAnalysisService, SignalScore
 
 router = APIRouter()
+
+# Simple in-memory cache for top picks
+_cache: Dict[str, Any] = {}
+_cache_ttl = 300  # 5 minutes cache
+
+def get_cached_top_picks(key: str) -> Optional[List[SignalScore]]:
+    """Get cached results if not expired"""
+    if key in _cache:
+        cached_data, timestamp = _cache[key]
+        if time.time() - timestamp < _cache_ttl:
+            return cached_data
+    return None
+
+def set_cached_top_picks(key: str, data: List[SignalScore]):
+    """Cache results with timestamp"""
+    _cache[key] = (data, time.time())
 
 # Default stock universe for scanning
 DEFAULT_STOCKS = [
@@ -290,6 +307,16 @@ async def get_top_picks(
     - recommendations: Comma-separated list of recommendations to include
     - sector: Filter stocks by sector (Tech, Finance, Healthcare, Energy, Consumer)
     """
+    # Build cache key from query params
+    cache_key = f"top_picks:{asset_type}:{sector}:{min_score}:{max_score}:{min_confidence}:{recommendations}"
+    
+    # Check cache first
+    cached_results = get_cached_top_picks(cache_key)
+    if cached_results is not None:
+        # Apply limit to cached results
+        filtered_cached = cached_results[:limit]
+        return format_top_picks_response(filtered_cached, limit)
+    
     symbols = []
     
     if asset_type in ['all', 'stocks']:
@@ -298,16 +325,21 @@ async def get_top_picks(
             sector_stocks = [s for s in DEFAULT_STOCKS if matches_sector_filter(s, sector)]
             symbols.extend(sector_stocks)
         else:
-            symbols.extend(DEFAULT_STOCKS)
+            # Limit stocks for performance - scan top 50 most popular
+            symbols.extend(DEFAULT_STOCKS[:50])
     
     if asset_type in ['all', 'crypto']:
-        symbols.extend(DEFAULT_CRYPTOS)
+        # Limit cryptos for performance - scan top 30
+        symbols.extend(DEFAULT_CRYPTOS[:30])
     
     if asset_type in ['all', 'commodity']:
         symbols.extend(DEFAULT_COMMODITIES)
     
     # Scan all symbols
     results = TechnicalAnalysisService.scan_multiple(symbols)
+    
+    # Cache the full results
+    set_cached_top_picks(cache_key, results)
     
     # Parse recommendations filter
     rec_filter = None
@@ -328,17 +360,20 @@ async def get_top_picks(
     # Take top N
     top_results = filtered_results[:limit]
     
-    # Format response
+    return format_top_picks_response(top_results, limit)
+
+def format_top_picks_response(top_results: List[SignalScore], limit: int) -> List[TopPickResponse]:
+    """Format SignalScore objects into TopPickResponse"""
     response = []
-    for i, score in enumerate(top_results, 1):
-        # Get current price
+    for i, score in enumerate(top_results[:limit], 1):
+        # Get current price from cached data or fetch fresh
         data = TechnicalAnalysisService.get_data(score.symbol, days=5)
         current_price = data[-1]['close'] if data else 0
         
         # Extract key signals
         key_signals = []
         for signal_type, signal_value in score.signals.items():
-            if 'bullish' in signal_value:
+            if 'bullish' in signal_value or 'bearish' in signal_value:
                 key_signals.append(f"{signal_type}: {signal_value}")
         
         response.append(TopPickResponse(
