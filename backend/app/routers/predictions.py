@@ -323,17 +323,18 @@ async def get_top_picks(
         # Apply sector pre-filter for stocks if specified
         if sector != 'all':
             sector_stocks = [s for s in DEFAULT_STOCKS if matches_sector_filter(s, sector)]
-            symbols.extend(sector_stocks)
+            symbols.extend(sector_stocks[:20])  # Limit to 20 for performance
         else:
-            # Limit stocks for performance - scan top 50 most popular
-            symbols.extend(DEFAULT_STOCKS[:50])
+            # Limit stocks for performance - scan top 20 most popular
+            symbols.extend(DEFAULT_STOCKS[:20])
     
     if asset_type in ['all', 'crypto']:
-        # Limit cryptos for performance - scan top 30
-        symbols.extend(DEFAULT_CRYPTOS[:30])
+        # Limit cryptos for performance - scan top 10
+        symbols.extend(DEFAULT_CRYPTOS[:10])
     
     if asset_type in ['all', 'commodity']:
-        symbols.extend(DEFAULT_COMMODITIES)
+        # Limit commodities for performance - scan top 5
+        symbols.extend(DEFAULT_COMMODITIES[:5])
     
     # Scan all symbols
     results = TechnicalAnalysisService.scan_multiple(symbols)
