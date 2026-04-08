@@ -5,6 +5,11 @@ set -e
 
 echo "🚀 Starting Chartwise AI Backend on Render.com..."
 
+# Set Python path to include current directory
+export PYTHONPATH="${PYTHONPATH}:$(pwd)"
+echo "📁 Working directory: $(pwd)"
+echo "🐍 PYTHONPATH: ${PYTHONPATH}"
+
 # Check required environment variables
 echo "🔍 Checking environment variables..."
 
@@ -39,6 +44,23 @@ echo "  - Frontend URL: ${FRONTEND_URL:-not set}"
 echo "  - Scheduler: ${ENABLE_SCHEDULER:-true}"
 echo ""
 
+# Verify main.py exists
+if [ ! -f "main.py" ]; then
+    echo "❌ ERROR: main.py not found in $(pwd)"
+    echo "📂 Directory contents:"
+    ls -la
+    exit 1
+fi
+
+echo "✅ Found main.py"
+
+# Test Python import
+echo "🧪 Testing Python import..."
+python -c "import main; print('✅ Main module imports successfully')" || {
+    echo "❌ Failed to import main module"
+    exit 1
+}
+
 # Start the application
 echo "🌟 Starting Uvicorn server..."
 exec uvicorn main:app \
@@ -46,4 +68,4 @@ exec uvicorn main:app \
     --port "${PORT:-8000}" \
     --workers 1 \
     --access-log \
-    --log-level info
+    --log-level debug
