@@ -40,10 +40,24 @@ async function handleResponse(response: Response) {
 }
 
 // Public endpoints (no auth required)
-export async function fetchTopPicks(limit = 10) {
-  const res = await fetch(`${API_BASE}/api/predictions/top-picks?limit=${limit}`)
-  if (!res.ok) throw new Error('Failed to fetch top picks')
-  return res.json()
+export async function fetchTopPicks(limit = 10, timeout = 30000) {
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), timeout)
+  
+  try {
+    const res = await fetch(`${API_BASE}/api/predictions/top-picks?limit=${limit}`, {
+      signal: controller.signal
+    })
+    clearTimeout(timeoutId)
+    if (!res.ok) throw new Error(`Failed to fetch top picks: ${res.status}`)
+    return res.json()
+  } catch (error) {
+    clearTimeout(timeoutId)
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error('Request timed out - backend is slow')
+    }
+    throw error
+  }
 }
 
 export async function fetchStockPrediction(symbol: string) {
