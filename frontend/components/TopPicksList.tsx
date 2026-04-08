@@ -30,15 +30,21 @@ export default function TopPicksList({ filters }: TopPicksListProps) {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    async function loadPicks() {
+    async function loadPicks(retryCount = 0) {
       try {
         setLoading(true)
         setError(null)
-        // Fetch with timeout and smaller limit for faster response
-        const data = await fetchTopPicks(20)
+        // Fetch with 60s timeout for cold starts
+        const data = await fetchTopPicks(20, 60000)
         setPicks(data)
       } catch (err) {
         console.error('Error loading top picks:', err)
+        // Retry up to 2 times on timeout
+        if (retryCount < 2 && err instanceof Error && err.message.includes('timed out')) {
+          console.log(`Retrying... attempt ${retryCount + 1}`)
+          setTimeout(() => loadPicks(retryCount + 1), 2000)
+          return
+        }
         setError('Failed to load top picks. Please try again.')
       } finally {
         setLoading(false)
@@ -46,8 +52,8 @@ export default function TopPicksList({ filters }: TopPicksListProps) {
     }
 
     loadPicks()
-    // Refresh every 5 minutes instead of every minute to reduce load
-    const interval = setInterval(loadPicks, 300000)
+    // Refresh every 5 minutes
+    const interval = setInterval(() => loadPicks(0), 300000)
     return () => clearInterval(interval)
   }, [])
 
